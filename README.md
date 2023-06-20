@@ -14,6 +14,7 @@ To make use of `ocrimg.py`, you can initialize an object of the `OCRImg` class :
 ```python
 # import library used to open images
 from PIL import Image
+from ocrimg import OCRImg
 
 # initialize image
 sample_img = Image.open("./path/to/sample/img.png")
