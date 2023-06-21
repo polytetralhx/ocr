@@ -39,13 +39,11 @@ def main():
             st.text(e)
             
     elif choice == "Take a Photo as Image!":
-        pic_buffer = st.camera_input("Take a picture to use for OCR!")
+        picture = st.camera_input("Take a picture to use for OCR!")
         
-        if pic_buffer:
+        if picture is not None:
             st.header("Image Taken for OCR")
-            st.image(pic_buffer)
-            pic_ary = np.array(pic_buffer)
-            picture = Image.fromarray(pic_ary)
+            st.image(picture)
             
             pic2 = OCRImg(picture)
             res_text2 = pic2.get_text()
