@@ -42,11 +42,11 @@ def main():
         picture = st.camera_input("Take a picture to use for OCR!")
         
         if picture is not None:
-            image = Image.open(picture)
+            pic1 = Image.open(picture)
             st.header("Image Taken for OCR")
-            st.image(picture)
+            st.image(pic1)
             
-            pic2 = OCRImg(picture)
+            pic2 = OCRImg(pic1)
             res_text2 = pic2.get_text()
             res_json2 = pic2.get_json()
                 
