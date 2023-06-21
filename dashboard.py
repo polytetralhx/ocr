@@ -22,6 +22,7 @@ def main():
             if uploaded_img is not None:
                 image = Image.open(uploaded_img)
                 st.header("Image Uploaded for OCR")
+                st.write(type(image))
                 st.image(image)
                 
                 image2 = OCRImg(image)
@@ -43,6 +44,7 @@ def main():
         
         if picture is not None:
             st.header("Image Taken for OCR")
+            st.write(type(picture))
             st.image(picture)
             
             pic2 = OCRImg(picture)
