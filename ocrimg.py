@@ -26,10 +26,10 @@ class OCRImg:
         full_contact = ''.join(contact)
         
         res_dict = {
-            "name": name.group(),
-            "email": email.group(),
+            "name": name.group() if name else '',
+            "email": email.group() if email else '',
             "contact": full_contact,
-            "company": company.group()
+            "company": company.group() if company else ''
         }
         res_json = json.dumps(res_dict)
         
