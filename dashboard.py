@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 from ocrimg import OCRImg
+from ocrutils import gamma_correction, get_edges, get_all_boxes, select_coords, transform_image
 from PIL import Image
 
 def main():

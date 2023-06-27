@@ -1,14 +1,13 @@
-import cv2
 import pytesseract
-import os
+import imutils
 import json
 import regex as re
-from PIL import Image
+from ocrutils import gamma_correction, get_edges, get_all_boxes, select_coords, transform_image
 
 class OCRImg:
     def __init__(self, img):
         self.img = img
-        self.text = pytesseract.image_to_string(img)
+        self.text = pytesseract.image_to_string(transform_image(imutils.resize(img, height = 500)))
     
     def get_text(self):
         return self.text
