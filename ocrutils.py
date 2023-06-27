@@ -3,6 +3,12 @@ import numpy as np
 import imutils
 from sklearn.metrics import euclidean_distances
 
+def pil_as_array(pil_img):
+    rgb_img = pil_img.convert("RGB")
+    open_cv_image = np.array(rgb_img) 
+    open_cv_image = open_cv_image[:, :, ::-1].copy() 
+    return open_cv_image
+
 def gamma_correction(src, gamma):
     invGamma = 1 / gamma
 
