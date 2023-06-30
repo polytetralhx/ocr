@@ -1,9 +1,10 @@
 import streamlit as st
 import numpy as np
 from ocrimg import OCRImg
-from ocrutils import transform_image, pil_as_array
+from ocrutils import transform_image, pil_as_array, DOC_HEIGHT, DOC_WIDTH
 from PIL import Image
 import cv2
+import imutils
 
 def main():
     new_title = '<p style="font-size: 42px;">CardR: an OCR Application for Business Cards</p>'
@@ -23,7 +24,7 @@ def main():
                 st.header("Image Uploaded for OCR")
                 st.image(image)
 
-                image1 = transform_image(pil_as_array(image))
+                image1 = transform_image(imutils.resize(pil_as_array(image), height = 500))
                 st.header("Image after Transformation")
                 st.image(image1)
                 
@@ -49,9 +50,9 @@ def main():
             st.header("Image Taken for OCR")
             st.image(pic)
         
-            pic1 = transform_image(pil_as_array(picture))
+            pic1 = transform_image(imutils.resize(pil_as_array(picture), height = 500))
             st.header("Image after Transformation")
-            st.image(pic1)
+            st.image(Image.fromarray(pic1))
             
             pic2 = OCRImg(pic)
             res_text2 = pic2.get_text()
