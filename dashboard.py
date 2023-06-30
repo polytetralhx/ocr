@@ -1,8 +1,9 @@
 import streamlit as st
 import numpy as np
 from ocrimg import OCRImg
-from ocrutils import gamma_correction, get_edges, get_all_boxes, select_coords, transform_image
+from ocrutils import transform_image, pil_as_array
 from PIL import Image
+import cv2
 
 def main():
     new_title = '<p style="font-size: 42px;">CardR: an OCR Application for Business Cards</p>'
@@ -21,6 +22,10 @@ def main():
                 image = Image.open(uploaded_img)
                 st.header("Image Uploaded for OCR")
                 st.image(image)
+
+                image1 = transform_image(pil_as_array(image))
+                st.header("Image after Transformation")
+                st.image(image1)
                 
                 image2 = OCRImg(image)
                 res_text = image2.get_text()
@@ -40,11 +45,15 @@ def main():
         picture = st.camera_input("Take a picture to use for OCR!")
         
         if picture is not None:
-            pic1 = Image.open(picture)
+            pic = Image.open(picture)
             st.header("Image Taken for OCR")
+            st.image(pic)
+        
+            pic1 = transform_image(pil_as_array(picture))
+            st.header("Image after Transformation")
             st.image(pic1)
             
-            pic2 = OCRImg(pic1)
+            pic2 = OCRImg(pic)
             res_text2 = pic2.get_text()
             res_json2 = pic2.get_json()
                 
