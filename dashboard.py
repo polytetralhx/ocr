@@ -11,12 +11,9 @@ def main():
     choice = st.sidebar.selectbox("Select an Option", ("About", "Upload an Image!", "Take a Photo as Image!"))
     
     if choice == "About":
-        #st.subheader("something")
         st.text("Proof-Of-Concept for Optical Character Recognition of business cards \nPowered with the Tesseract OCR Engine wrapped in Pytesseract")
         
     elif choice == "Upload an Image!":
-        #read_me_0.empty()
-        #read_me.empty()
         try:
             uploaded_img = st.file_uploader("Choose an image to begin OCR", type = ["jpg", "jpeg", "png"])
             
