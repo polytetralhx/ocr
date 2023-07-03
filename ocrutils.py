@@ -45,6 +45,18 @@ def get_edges(img):
     
     return edged
 
+def get_binary(img):
+    '''input image opened by invoking cv2.imread.
+        output the same image reduced to binary edge features.'''
+    gray = cv2.cvtColor(gamma_correction(img, 1.05), cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    #(thresh, binary) = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+    #(thresh, binary) = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+    # apply adaptive thresholding for different light conditions
+    binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 21, 12)
+
+    return binary
+
 def get_all_boxes(edged):
 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 	cnts = imutils.grab_contours(cnts)
@@ -89,7 +101,6 @@ def select_coords(screenCnt):
 
     #sorted_points = np.array(sorted(screenCnt, key=lambda x: x[0]))
     left, right, top, bottom = min(screenCnt[:, 0]), max(screenCnt[:, 0]), min(screenCnt[:, 1]), max(screenCnt[:, 1])
-    #print(left, right, top, bottom)
 
     topleft = min(screenCnt, key=lambda x: euclidean_distances([x], [(left, top)]))
     topright = min(screenCnt, key=lambda x: euclidean_distances([x], [(right, top)]))
@@ -105,7 +116,7 @@ def transform_image(img):
     Assume that the image has already be resized'''
     
     #read the image and get its edges
-    edged = get_edges(img)    
+    edged = get_binary(img)    
     boxes = get_all_boxes(edged)
     topleft, topright, bottomleft, bottomright = select_coords(boxes) #something sus here
 
