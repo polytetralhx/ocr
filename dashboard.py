@@ -24,7 +24,8 @@ def main():
                 st.header("Image Uploaded for OCR")
                 st.image(image)
 
-                image1 = transform_image(imutils.resize(pil_as_array(image), height = 500))
+                #image1 = transform_image(imutils.resize(pil_as_array(image), height = 500))
+                image1 = transform_image(pil_as_array(image))
                 st.header("Image after Transformation")
                 st.image(image1)
                 
@@ -50,7 +51,8 @@ def main():
             st.header("Image Taken for OCR")
             st.image(pic)
         
-            pic1 = transform_image(imutils.resize(pil_as_array(picture), height = 500))
+            #pic1 = transform_image(imutils.resize(pil_as_array(picture), height = 500))
+            pic1 = transform_image(pil_as_array(pic))
             st.header("Image after Transformation")
             st.image(Image.fromarray(pic1))
             
