@@ -116,8 +116,8 @@ def transform_image(img):
     Assume that the image has already be resized'''
     
     #read the image and get its edges
-    edged = get_binary(img)    
-    boxes = get_all_boxes(edged)
+    binary = get_binary(img)    
+    boxes = get_all_boxes(binary)
     topleft, topright, bottomleft, bottomright = select_coords(boxes) #something sus here
 
     #initialize points: input convert to top-down output
