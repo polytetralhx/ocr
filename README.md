@@ -1,5 +1,5 @@
 # CardR: An OCR Application for Business Cards
-### Deployed using Streamlit on the following website: [https://polytetralhx-ocr-dashboard-first-cf9cnk.streamlit.app/](https://ocr-x0injqu0hdh.streamlit.app/)
+### Deployed using Streamlit on the following website: [CardR](https://ocr-x0injqu0hdh.streamlit.app/)
 
 ### Requirements: 
 
