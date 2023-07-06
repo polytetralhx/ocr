@@ -26,6 +26,7 @@ def main():
 
                 #image1 = transform_image(imutils.resize(pil_as_array(image), height = 500))
                 image1 = transform_image(pil_as_array(image))
+                image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
                 st.header("Image after Transformation")
                 st.image(image1)
                 
@@ -53,6 +54,7 @@ def main():
         
             #pic1 = transform_image(imutils.resize(pil_as_array(picture), height = 500))
             pic1 = transform_image(pil_as_array(pic))
+            pic1 = cv2.cvtColor(pic1, cv2.COLOR_BGR2RGB)
             st.header("Image after Transformation")
             st.image(Image.fromarray(pic1))
             
