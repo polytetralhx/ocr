@@ -1,17 +1,9 @@
 import cv2
 import numpy as np
-import imutils
+from imutils import resize, grab_contours
 from sklearn.metrics import euclidean_distances
 
 DOC_WIDTH, DOC_HEIGHT = 1098, 648
-
-def gamma_correction(src, gamma):
-    invGamma = 1 / gamma
-
-    table = [((i / 255) ** invGamma) * 255 for i in range(256)]
-    table = np.array(table, np.uint8)
-
-    return cv2.LUT(src, table)
 
 def pil_as_array(pil_img):
     rgb_img = pil_img.convert("RGB")
@@ -19,47 +11,28 @@ def pil_as_array(pil_img):
     open_cv_image = open_cv_image[:, :, ::-1].copy() 
     return open_cv_image
 
-def get_padding(img):
-    '''add padding equivalent to 10% of the document size and return image'''
-    image = imutils.resize(img, height = 500)
-    
-    top = int(0.1 * DOC_HEIGHT)
-    bottom = top
-    left = int(0.1 * DOC_WIDTH)
-    right = left
-    
-    image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(0, 0, 0))
-    cv2.imshow("image with padding", image)
-    cv2.waitKey(0)
-    
-    return image
+def grayscale(src):
+    gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+    return gray
 
-def get_edges(img):
+def morph(src):
+    return cv2.morphologyEx(src, cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)))
+
+def remove_noise(src):
+    return cv2.fastNlMeansDenoising(src, None, 10, 10, 7)
+
+def get_edges(src):
     '''input an image opened by invoking cv2.imread.
         output the same image reduced to its edges.'''
     # convert the image to grayscale, blur it, and find edges
     # in the image
-    gray = cv2.cvtColor(gamma_correction(img, 1.05), cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    edged = cv2.Canny(gray, 70, 150)
+    edged = cv2.Canny(src, 30, 30)
     
     return edged
 
-def get_binary(img):
-    '''input image opened by invoking cv2.imread.
-        output the same image reduced to binary edge features.'''
-    gray = cv2.cvtColor(gamma_correction(img, 1.05), cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    #(thresh, binary) = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
-    #(thresh, binary) = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-    # apply adaptive thresholding for different light conditions
-    binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 21, 12)
-
-    return binary
-
 def get_all_boxes(edged):
 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-	cnts = imutils.grab_contours(cnts)
+	cnts = grab_contours(cnts)
 	cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
  
 	# loop over the contours
@@ -77,8 +50,6 @@ def get_all_boxes(edged):
 
 def select_coords(screenCnt):
     screenCnt = screenCnt.reshape(len(screenCnt), 2)
-    screenCnt[:, 0] -= int(0.1 * DOC_WIDTH)
-    screenCnt[:, 1] -= int(0.1 * DOC_HEIGHT)
     close_pairs = np.array(np.where(~((euclidean_distances(screenCnt, screenCnt) > 10) | (euclidean_distances(screenCnt, screenCnt) == 0)))).T
 
     if len(close_pairs):
@@ -109,6 +80,25 @@ def select_coords(screenCnt):
     
     return topleft, topright, bottomleft, bottomright
 
+def crop_image(img, topleft, topright, bottomleft, bottomright):
+    max_h, max_w = img.shape[:2]
+
+    #initialize points: input convert to top-down output
+    input_pts = np.float32([list(coord) for coord in [topleft, bottomleft, bottomright, topright]])
+    output_pts = np.float32([[0, 0],
+                            [0, max_h - 1],
+                            [max_w - 1, max_h - 1],
+                            [max_w - 1, 0]])
+    
+    #plt.imshow(cv2.drawContours(img, [np.array([topleft, topright, bottomright, bottomleft]).reshape((4, 1, 2))], -1, (255,0,0), 2))
+    #cv2.imshow("edged", edged)
+    #cv2.waitKey(0)
+    
+    # Compute the perspective transform mat
+    transform_mat = cv2.getPerspectiveTransform(input_pts, output_pts)
+    out = cv2.warpPerspective(img, transform_mat, (max_w, max_h), flags=cv2.INTER_LINEAR)
+    return out
+
 def transform_image(img):
     '''the official driver code for the whole process.
     Accepts an image as input, for OCRImg class
@@ -116,19 +106,12 @@ def transform_image(img):
     Assume that the image has already be resized'''
     
     #read the image and get its edges
-    binary = get_binary(img)    
-    boxes = get_all_boxes(binary)
-    topleft, topright, bottomleft, bottomright = select_coords(boxes) #something sus here
-
-    #initialize points: input convert to top-down output
-    input_pts = np.float32([list(coord) for coord in [topleft, bottomleft, bottomright, topright]])
-    output_pts = np.float32([[0, 0],
-                            [0, DOC_HEIGHT - 1],
-                            [DOC_WIDTH - 1, DOC_HEIGHT - 1],
-                            [DOC_WIDTH - 1, 0]])
+    img_resize = resize(img, height = 500)
+    img_gray = grayscale(img_resize)
+    img_morph = morph(img_gray)
+    reduced_noise = remove_noise(img_morph)
+    edged = get_edges(reduced_noise)
+    topleft, topright, bottomleft, bottomright = select_coords(get_all_boxes(edged))
+    transformed = crop_image(img_resize, topleft, topright, bottomleft, bottomright)
     
-    # Compute the perspective transform mat
-    transform_mat = cv2.getPerspectiveTransform(input_pts, output_pts)
-    out = cv2.warpPerspective(img, transform_mat, (DOC_WIDTH, DOC_HEIGHT), flags=cv2.INTER_LINEAR)
-    
-    return out
+    return transformed
