@@ -1,8 +1,8 @@
 import streamlit as st
 import numpy as np
 from ocrimg import OCRImg
-from ocrutils import transform_image, pil_as_array, DOC_HEIGHT, DOC_WIDTH
-from PIL import Image
+from ocrutils import transform_image, pil_as_array
+from PIL import Image, ImageOps
 import cv2
 import imutils
 
@@ -21,6 +21,7 @@ def main():
             
             if uploaded_img is not None:
                 image = Image.open(uploaded_img)
+                image = ImageOps.exif_transpose(image)
                 st.header("Image Uploaded for OCR")
                 st.image(image)
 
@@ -49,6 +50,7 @@ def main():
         
         if picture is not None:
             pic = Image.open(picture)
+            pic = ImageOps.exif_transpose(pic)
             st.header("Image Taken for OCR")
             st.image(pic)
         
