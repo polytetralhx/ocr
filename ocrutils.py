@@ -29,10 +29,14 @@ def get_edges(src, threshold = 50):
     threshold_height = int(threshold / aspect_ratio)
     return cv2.Canny(src, threshold, threshold_height, apertureSize = 3)
 
-def remove_glare(img: np.ndarray, brightness: int):
-    img_lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+def remove_glare(src: np.ndarray, brightness: int):
+    img_lab = cv2.cvtColor(src, cv2.COLOR_BGR2LAB)
     img_lab[:, :, 0] = brightness
     return cv2.cvtColor(img_lab, cv2.COLOR_LAB2BGR)
+
+def close_edges(src):
+    kernel = np.ones((9, 9), np.uint8)
+    return cv2.morphologyEx(src, cv2.MORPH_CLOSE, kernel)
 
 def get_all_boxes(edged):
 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -113,7 +117,8 @@ def transform_image(img):
     img_resize = resize(img, width=500)
     even = remove_glare(img_resize, 100)
     edged = get_edges(even)
-    topleft, topright, bottomleft, bottomright = select_coords(get_all_boxes(edged))
+    closed = close_edges(edged)
+    topleft, topright, bottomleft, bottomright = select_coords(get_all_boxes(closed))
     transformed = crop_image(img_resize, topleft, topright, bottomleft, bottomright)
     
     return transformed
