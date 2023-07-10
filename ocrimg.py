@@ -8,7 +8,7 @@ class OCRImg:
         self.img = img
         
         # for quick debugging, use get_text()
-        self.text = pytesseract.image_to_string(transform_image(imutils.resize(pil_as_array(img), height = 500)))
+        self.text = pytesseract.image_to_string(transform_image(imutils.resize(pil_as_array(img), width = 500)))
     
     def get_text(self):
         return self.text

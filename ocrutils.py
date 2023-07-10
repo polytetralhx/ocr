@@ -21,14 +21,18 @@ def morph(src):
 def remove_noise(src):
     return cv2.fastNlMeansDenoising(src, None, 10, 10, 7)
 
-def get_edges(src):
+def get_edges(src, threshold = 50):
     '''input an image opened by invoking cv2.imread.
         output the same image reduced to its edges.'''
     # convert the image to grayscale, blur it, and find edges
-    # in the image
-    edged = cv2.Canny(src, 30, 30)
-    
-    return edged
+    aspect_ratio = src.shape[1] / src.shape[0]
+    threshold_height = int(threshold / aspect_ratio)
+    return cv2.Canny(src, threshold, threshold_height, apertureSize = 3)
+
+def remove_glare(img: np.ndarray, brightness: int):
+    img_lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    img_lab[:, :, 0] = brightness
+    return cv2.cvtColor(img_lab, cv2.COLOR_LAB2BGR)
 
 def get_all_boxes(edged):
 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -106,11 +110,9 @@ def transform_image(img):
     Assume that the image has already be resized'''
     
     #read the image and get its edges
-    img_resize = resize(img, height = 500)
-    img_gray = grayscale(img_resize)
-    img_morph = morph(img_gray)
-    reduced_noise = remove_noise(img_morph)
-    edged = get_edges(reduced_noise)
+    img_resize = resize(img, width=500)
+    even = remove_glare(img_resize, 100)
+    edged = get_edges(even)
     topleft, topright, bottomleft, bottomright = select_coords(get_all_boxes(edged))
     transformed = crop_image(img_resize, topleft, topright, bottomleft, bottomright)
     
