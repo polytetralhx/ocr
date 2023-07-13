@@ -15,13 +15,10 @@ def grayscale(src):
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     return gray
 
-def morph(src):
-    return cv2.morphologyEx(src, cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)))
-
 def remove_noise(src):
     return cv2.fastNlMeansDenoising(src, None, 10, 10, 7)
 
-def get_edges(src, threshold = 50):
+def get_edges(src, threshold = 90):
     '''input an image opened by invoking cv2.imread.
         output the same image reduced to its edges.'''
     # convert the image to grayscale, blur it, and find edges
@@ -36,7 +33,7 @@ def remove_glare(src: np.ndarray, brightness: int):
 
 def close_edges(src):
     kernel = np.ones((9, 9), np.uint8)
-    return cv2.morphologyEx(src, cv2.MORPH_CLOSE, kernel)
+    return cv2.morphologyEx(src, cv2.MORPH_CLOSE, kernel, iterations = 2)
 
 def get_all_boxes(edged):
 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
